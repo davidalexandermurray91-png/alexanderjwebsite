@@ -411,7 +411,7 @@ header::after{top:10px;right:16px;border-width:2px 2px 0 0;}
         <span class="ctrl-key">↑ ↓ ← →</span>
         <span class="ctrl-key jump">SPACE</span>
       </div>
-      <div class="ctrl-info">⬡ P1 Controls: Arrow keys to steer · SPACE = Jump Attack (−5 HP self, −3 HP opp.)</div>
+      <div class="ctrl-info">⬡ P1 Controls: Arrow keys to steer · SPACE = Jump Attack (−5 HP self, −3 HP opponent)</div>
     </div>
 
     <div class="bpanel p2">
@@ -1274,7 +1274,8 @@ function arenaLoop(){
       if(hitTop)  {b.vy=Math.abs(b.vy); b.y=pf.y+b.r+1;}
       if(hitBottom){b.vy=-Math.abs(b.vy);b.y=pf.y+pf.h-b.r-1;}
       // Accelerator edge rail: bey spikes engage wall spikes → boost toward centre
-      if(st.xtremeDash&&(hitLeft||hitRight||hitTop||hitBottom)&&!b.onRail){
+      const hitAnyWall=hitLeft||hitRight||hitTop||hitBottom;
+      if(st.xtremeDash&&hitAnyWall&&!b.onRail){
         b.onRail=true;b.railBurst=0.85;
         railFlash={active:true,bey:i,timer:7};
         const cx2=pf.x+pf.w/2,cy2=pf.y+pf.h/2;
@@ -1698,8 +1699,8 @@ function doJumpAttack(){
   beys[0].jumpTimer=20;
   spawnP(beys[0].x,beys[0].y);
   spawnCSS(beys[0].x,beys[0].y);
-  appendLog(1,'<span class="xtreme">⬆ JUMP ATTACK! (−5 HP self, −3 HP opp.)</span>');
-  appendLog(2,'<span class="hit">3 dmg — Jump Attack!</span>');
+  appendLog(1,'<span class="xtreme">⬆ JUMP ATTACK! (−5 HP self, −3 HP opponent)</span>');
+  appendLog(2,'<span class="hit">3 damage — Jump Attack!</span>');
   updateBars();
   if(bat.hp2<=0&&!bat.over)     endBattle(1,'JUMP FINISH',1);
   else if(bat.hp1<=0&&!bat.over)endBattle(2,'JUMP FINISH',1);
@@ -1709,13 +1710,14 @@ function applyKeyControls(){
   if(!beys||beys.length<1||bat.hp1===undefined||bat.over)return;
   const b=beys[0];
   const force=0.32;
+  const MAX_SPEED_MULTIPLIER=2.0;
   if(keys['ArrowUp'])   b.vy-=force;
   if(keys['ArrowDown']) b.vy+=force;
   if(keys['ArrowLeft']) b.vx-=force;
   if(keys['ArrowRight'])b.vx+=force;
   // Clamp to a reasonable max so the bey doesn't escape the arena instantly
   const spd=Math.sqrt(b.vx**2+b.vy**2);
-  const maxSpd=b.baseSpd*2.0;
+  const maxSpd=b.baseSpd*MAX_SPEED_MULTIPLIER;
   if(spd>maxSpd){b.vx=(b.vx/spd)*maxSpd;b.vy=(b.vy/spd)*maxSpd;}
   // Jump visual timer
   if(b.jumpTimer>0){b.jumpTimer--;if(b.jumpTimer===0)b.railBurst=0;}
