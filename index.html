@@ -825,12 +825,12 @@ function initArena(){
   arCanvas.width=sz; arCanvas.height=sz;
   drawEmptyArena();
 }
-initArena();
-
 // Rail flash state  
 let railFlash={active:false,bey:-1,timer:0};
 // KO animation state
 let koAnim={active:false,bey:-1,vx:0,vy:0,timer:0,winner:-1,method:'',pts:0};
+
+initArena();
 
 function drawEmptyArena(){
   const W=arCanvas.width,H=arCanvas.height;
