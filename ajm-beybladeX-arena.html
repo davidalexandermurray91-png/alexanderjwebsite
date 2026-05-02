@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alexander James Murray — BeyBattle X Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,600;0,800;0,900;1,800&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060a; --panel:#090e18; --panel2:#0d1422;
+  --border:#263550; --border2:#2e4468;          /* brighter borders */
+  --x:#00ff88;
+  --xd:#00cc66;
+  --p1:#00d4ff; --p2:#ff3a6e;
+  --gold:#ffe44d; --warn:#ff9933;
+  --text:#ddeeff;                               /* brighter main text */
+  --muted:#7a96b8;                              /* was #4a6080 — much more readable */
+  --muted2:#3a5070;                             /* was #2a3a55 */
+  --atk:#ff5544; --def:#4488ff; --stm:#44ee88; --spd:#ffcc33; --bst:#cc55ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+
+/* scanline texture */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,255,136,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,136,.025) 1px,transparent 1px);
+  background-size:36px 36px;}
+
+/* ══ HEADER ══ */
+header{text-align:center;padding:24px 20px 14px;position:relative;}
+.ajm-sub{font-family:'Exo 2',sans-serif;font-size:clamp(.48rem,1.3vw,.65rem);letter-spacing:.4em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.logo-wrap{position:relative;display:inline-block;}
+header h1{font-family:'Exo 2',sans-serif;font-size:clamp(1.6rem,5vw,3rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--p1) 0%,var(--x) 45%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(0,255,136,.4));}
+.x-badge{font-family:'Exo 2',sans-serif;font-size:clamp(.9rem,2.5vw,1.5rem);font-weight:900;font-style:italic;
+  background:var(--x);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-left:6px;filter:drop-shadow(0 0 12px var(--x));}
+header p{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.hline{height:1px;margin-top:12px;
+  background:linear-gradient(to right,transparent,var(--p1) 20%,var(--x) 50%,var(--p2) 80%,transparent);
+  opacity:.5;}
+/* X corner accents */
+header::before,header::after{content:'';position:absolute;width:20px;height:20px;border-color:var(--x);border-style:solid;opacity:.5;}
+header::before{top:10px;left:16px;border-width:2px 0 0 2px;}
+header::after{top:10px;right:16px;border-width:2px 2px 0 0;}
+
+.app{max-width:1320px;margin:0 auto;padding:14px 12px 60px;}
+
+/* ══ STEP BAR ══ */
+.step-bar{display:flex;margin-bottom:18px;border:1px solid var(--border2);border-radius:2px;overflow:hidden;background:var(--panel);}
+.step{flex:1;padding:10px 4px;text-align:center;font-family:'Exo 2',sans-serif;font-size:.58rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--border);transition:all .2s;position:relative;}
+.step:last-child{border-right:none;}
+.step.active{color:var(--x);background:#050f08;}
+.step.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--x);box-shadow:0 0 8px var(--x);}
+.step.done{color:var(--stm);}
+
+/* ══ STADIUM SELECT ══ */
+#stadium-screen .section-head{font-family:'Exo 2',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--x);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+#stadium-screen .section-head::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--x),transparent);}
+.stadium-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:700px){.stadium-grid{grid-template-columns:1fr;}}
+.st-card{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:0;cursor:pointer;transition:all .18s;overflow:hidden;position:relative;}
+.st-card:hover{border-color:var(--muted);}
+.st-card.selected{border-color:var(--x);box-shadow:0 0 18px rgba(0,255,136,.18);}
+.st-card.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--x);box-shadow:0 0 8px var(--x);}
+.st-canvas-wrap{padding:14px 14px 8px;}
+.st-info{padding:0 14px 12px;}
+.st-name{font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-bottom:3px;}
+.st-card.selected .st-name{color:var(--x);}
+.st-tag{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#8aaacf;margin-bottom:7px;}
+.st-modifier-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.st-mod{font-size:.58rem;padding:2px 6px;border-radius:2px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;}
+.mod-boost{background:rgba(255,85,68,.15);color:#ff8877;}
+.mod-drain{background:rgba(68,136,255,.15);color:#7799ff;}
+.mod-neutral{background:rgba(100,100,100,.15);color:#778899;}
+.st-desc{font-size:.68rem;color:#8aaacf;line-height:1.5;}
+.st-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border:1px solid var(--muted2);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s;}
+.st-card.selected .st-check{background:var(--x);border-color:var(--x);color:#000;}
+
+.next-btn{font-family:'Exo 2',sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;padding:13px 44px;background:var(--x);border:none;border-radius:2px;color:#000;cursor:pointer;transition:all .2s;display:block;margin:0 auto;}
+.next-btn:hover{background:#33ffaa;transform:translateY(-1px);box-shadow:0 0 24px rgba(0,255,136,.4);}
+
+/* ══ BUILD SCREEN ══ */
+.build-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:760px){.build-cols{grid-template-columns:1fr;}}
+.player-col{background:var(--panel);border:1px solid var(--border2);border-radius:3px;overflow:hidden;}
+.col-top{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.p1c .col-top{border-top:3px solid var(--p1);}
+.p2c .col-top{border-top:3px solid var(--p2);}
+.col-top h2{font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;}
+.p1c .col-top h2{color:var(--p1);}
+.p2c .col-top h2{color:var(--p2);}
+.bname-in{background:#050a12;border:1px solid var(--border2);border-radius:2px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:600;padding:6px 10px;outline:none;transition:border-color .2s;flex:1;}
+.p1c .bname-in:focus{border-color:var(--p1);}
+.p2c .bname-in:focus{border-color:var(--p2);}
+
+.parts-tabs{display:flex;border-bottom:1px solid var(--border);}
+.pt{flex:1;padding:9px 3px;text-align:center;font-family:'Exo 2',sans-serif;font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;transition:all .14s;}
+.pt:hover{color:var(--text);}
+.pt.on.p1c{color:var(--p1);border-bottom-color:var(--p1);}
+.pt.on.p2c{color:var(--p2);border-bottom-color:var(--p2);}
+
+.pp{display:none;padding:12px;}
+.pp.on{display:block;}
+.pcat{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+
+.parts-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.pc{background:#050a12;border:1px solid var(--border);border-radius:2px;padding:9px 9px 7px;cursor:pointer;transition:all .14s;position:relative;}
+.pc:hover{border-color:var(--muted);}
+.pc.on.p1c{background:rgba(0,212,255,.07);border-color:var(--p1);box-shadow:0 0 8px rgba(0,212,255,.12);}
+.pc.on.p2c{background:rgba(255,58,110,.07);border-color:var(--p2);box-shadow:0 0 8px rgba(255,58,110,.12);}
+.pname{font-family:'Exo 2',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;}
+.p1c .pc.on .pname{color:var(--p1);}
+.p2c .pc.on .pname{color:var(--p2);}
+.pbadge{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;padding:1px 5px;border-radius:1px;display:inline-block;margin-bottom:4px;}
+.ba{background:rgba(255,85,68,.14);color:#ff7766;}
+.bd{background:rgba(68,136,255,.14);color:#6699ff;}
+.bs2{background:rgba(68,238,136,.14);color:#55ddaa;}
+.bb{background:rgba(255,220,80,.14);color:#ffcc66;}
+.pbars{display:flex;flex-direction:column;gap:2px;}
+.pbr{display:flex;align-items:center;gap:4px;}
+.pbl{font-size:.5rem;color:var(--muted);width:14px;flex-shrink:0;text-transform:uppercase;}
+.pbt{flex:1;height:3px;background:#0d1828;border-radius:1px;overflow:hidden;}
+.pbf{height:100%;border-radius:1px;}
+.pbf.a{background:var(--atk);}
+.pbf.d{background:var(--def);}
+.pbf.s{background:var(--stm);}
+.pbf.sp{background:var(--spd);}
+.pbf.b{background:var(--bst);}
+.pdesc{font-size:.6rem;color:#8aaacf;line-height:1.45;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+
+/* SUMMARY */
+.bsum{margin:0 12px 12px;background:#050a12;border:1px solid var(--border);border-radius:2px;padding:10px;}
+.bsum-title{font-family:'Exo 2',sans-serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.bsum-chips{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;}
+.bchip{font-family:'Exo 2',sans-serif;font-size:.58rem;padding:3px 7px;background:#0a0f1a;border:1px solid var(--border);border-radius:2px;color:var(--muted);transition:all .2s;}
+.bchip.on.p1c{border-color:var(--p1);color:var(--p1);}
+.bchip.on.p2c{border-color:var(--p2);color:var(--p2);}
+.bsum-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+.bss{text-align:center;}
+.bssv{font-family:'Exo 2',sans-serif;font-size:.95rem;font-weight:800;}
+.bssl{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.p1c .bssv{color:var(--p1);}
+.p2c .bssv{color:var(--p2);}
+
+/* TYPE */
+.type-sec{padding:0 12px 12px;}
+.tseclabel{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;}
+.type-row{display:flex;gap:5px;flex-wrap:wrap;}
+.tbtn{flex:1;min-width:58px;padding:7px 3px;background:#050a12;border:1px solid var(--border);border-radius:2px;color:var(--muted);font-family:'Exo 2',sans-serif;font-weight:700;font-size:.66rem;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .13s;text-align:center;}
+.tbtn:hover{border-color:var(--muted);color:var(--text);}
+.tbtn.on.p1c{background:rgba(0,212,255,.1);border-color:var(--p1);color:var(--p1);}
+.tbtn.on.p2c{background:rgba(255,58,110,.1);border-color:var(--p2);color:var(--p2);}
+.tdesc{font-size:.64rem;color:#8aaacf;line-height:1.5;margin-top:7px;border-left:2px solid var(--border2);padding-left:8px;min-height:34px;}
+
+/* LAUNCH */
+.launch-wrap{text-align:center;margin-top:18px;}
+.launch-btn{font-family:'Exo 2',sans-serif;font-weight:900;font-style:italic;font-size:1rem;letter-spacing:.14em;text-transform:uppercase;padding:14px 52px;background:linear-gradient(135deg,var(--x),#00aa55);border:none;border-radius:2px;color:#000;cursor:pointer;transition:all .2s;box-shadow:0 0 28px rgba(0,255,136,.3);}
+.launch-btn:hover{transform:translateY(-2px);box-shadow:0 0 48px rgba(0,255,136,.5);}
+.launch-note{margin-top:8px;font-size:.66rem;color:var(--muted);letter-spacing:.08em;}
+
+/* ══ BATTLE ══ */
+.battle-layout{display:grid;grid-template-columns:196px 1fr 196px;gap:12px;align-items:start;}
+@media(max-width:820px){.battle-layout{grid-template-columns:1fr;}.bcwrap{order:-1;}}
+
+.bpanel{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:14px 12px;overflow:hidden;}
+.p1.bpanel{border-top:3px solid var(--p1);}
+.p2.bpanel{border-top:3px solid var(--p2);}
+.bpanel h3{font-family:'Exo 2',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;}
+.p1.bpanel h3{color:var(--p1);}
+.p2.bpanel h3{color:var(--p2);}
+.bpname{font-family:'Exo 2',sans-serif;font-size:.82rem;font-weight:800;margin-bottom:9px;text-transform:uppercase;}
+.p1.bpanel .bpname{color:var(--p1);}
+.p2.bpanel .bpname{color:var(--p2);}
+.bbar{margin-bottom:9px;}
+.bbl{display:flex;justify-content:space-between;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.bbg{height:6px;background:#050a12;border-radius:1px;border:1px solid var(--border);overflow:hidden;}
+.bbf{height:100%;border-radius:1px;transition:width .3s ease;}
+.p1.bpanel .hpf{background:linear-gradient(to right,#0055aa,var(--p1));box-shadow:0 0 5px var(--p1);}
+.p2.bpanel .hpf{background:linear-gradient(to right,#990033,var(--p2));box-shadow:0 0 5px var(--p2);}
+.stf{background:linear-gradient(to right,#115522,var(--x));}
+.bstat{display:flex;justify-content:space-between;font-size:.68rem;color:#8aaacf;margin-bottom:2px;}
+.bstat span:last-child{color:var(--text);font-weight:600;}
+
+/* STADIUM INDICATOR */
+.st-indicator{background:#050a12;border:1px solid var(--border);border-radius:2px;padding:8px 10px;margin-bottom:9px;font-size:.62rem;}
+.sti-name{font-family:'Exo 2',sans-serif;font-size:.7rem;font-weight:800;color:var(--x);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+.sti-mods{display:flex;flex-wrap:wrap;gap:3px;}
+.sti-mod{font-size:.55rem;padding:1px 5px;border-radius:1px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;}
+
+.bparts{margin:8px 0 6px;padding-top:7px;border-top:1px solid var(--border);}
+.bpl{font-size:.64rem;color:#8aaacf;margin-bottom:2px;}
+.bpl b{color:var(--text);}
+.elog{margin-top:9px;font-size:.68rem;color:#7a96b8;line-height:1.72;min-height:52px;border-top:1px solid var(--border2);padding-top:8px;}
+.elog .hit{color:var(--gold);}
+.elog .crit{color:var(--warn);font-weight:700;}
+.elog .ko{color:var(--p2);font-weight:700;}
+.elog .win{color:var(--x);font-weight:700;}
+.elog .info{color:#5577aa;}
+.elog .miss{color:#334;}
+.elog .xtreme{color:var(--x);font-weight:700;}
+
+/* ══ ARENA CANVAS AREA ══ */
+.bcwrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+#arenaCanvas{display:block;}
+.binfo{text-align:center;}
+.rdisp{font-family:'Exo 2',sans-serif;font-size:.62rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.bstatus{font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:900;font-style:italic;color:var(--x);min-height:24px;text-transform:uppercase;letter-spacing:.06em;}
+.tnotice{font-size:.64rem;text-align:center;color:var(--muted);letter-spacing:.07em;min-height:15px;margin-top:2px;}
+.tnotice.adv{color:var(--gold);}
+.btns{display:flex;gap:8px;justify-content:center;}
+.bbtn{font-family:'Exo 2',sans-serif;font-size:.64rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;transition:all .17s;}
+.bbtn:hover{border-color:var(--text);color:var(--text);}
+.bbtn.pri{background:var(--x);border-color:var(--x);color:#000;}
+.bbtn.pri:hover{background:#33ffaa;}
+.bbtn:disabled{opacity:.28;cursor:not-allowed;}
+
+/* ══ SCORE TICKER ══ */
+.score-row{display:flex;justify-content:center;align-items:center;gap:16px;margin-top:6px;}
+.score-box{text-align:center;}
+.sc-val{font-family:'Exo 2',sans-serif;font-size:1.6rem;font-weight:900;line-height:1;}
+.p1 .sc-val{color:var(--p1);}
+.p2 .sc-val{color:var(--p2);}
+.sc-lab{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+.score-sep{font-family:'Exo 2',sans-serif;font-size:.6rem;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+/* ══ WINNER ══ */
+#winner-overlay{display:none;position:fixed;inset:0;background:rgba(4,6,10,.95);z-index:100;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;}
+#winner-overlay.show{display:flex;}
+.win-x-line{width:100px;height:2px;background:var(--x);box-shadow:0 0 12px var(--x);margin:0 auto 18px;}
+#winner-title{font-family:'Exo 2',sans-serif;font-size:clamp(1.2rem,5vw,2.6rem);font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+#winner-method{font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--x);margin-bottom:6px;filter:drop-shadow(0 0 8px var(--x));}
+#winner-sub{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;}
+.pa-btn{font-family:'Exo 2',sans-serif;font-weight:900;font-style:italic;font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;padding:12px 40px;background:var(--x);border:none;border-radius:2px;color:#000;cursor:pointer;transition:all .2s;}
+.pa-btn:hover{background:#33ffaa;transform:scale(1.04);}
+
+/* sparks */
+.spark{position:fixed;border-radius:50%;pointer-events:none;z-index:9998;animation:sfx .7s ease-out forwards;}
+@keyframes sfx{0%{opacity:1;transform:scale(1) translate(0,0)}100%{opacity:0;transform:scale(.1) translate(var(--tx),var(--ty))}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ajm-sub">Alexander James Murray Presents</div>
+  <div class="logo-wrap">
+    <h1>BeyBattle<span class="x-badge">X</span></h1>
+  </div>
+  <p>Build · Choose Your Stadium · Let It Rip</p>
+  <div class="hline"></div>
+</header>
+
+<div class="app">
+
+<!-- ══════════════ STEP BAR ══════════════ -->
+<div class="step-bar">
+  <div class="step active" id="s1">① Stadium</div>
+  <div class="step" id="s2">② Build Your Bey</div>
+  <div class="step" id="s3">③ Battle</div>
+</div>
+
+<!-- ══════════════ STADIUM SELECT ══════════════ -->
+<div id="stadium-screen">
+  <div class="section-head">Choose Your Stadium</div>
+  <div class="stadium-grid" id="stadium-grid"></div>
+  <button class="next-btn" onclick="goToBuild()">NEXT — BUILD YOUR BEY →</button>
+</div>
+
+<!-- ══════════════ BUILD SCREEN ══════════════ -->
+<div id="build-screen" style="display:none">
+  <div class="build-cols">
+
+    <!-- P1 -->
+    <div class="player-col p1c">
+      <div class="col-top"><h2>⬡ Player 1</h2><input class="bname-in" id="name1" value="Dagger Dran" placeholder="Bey name..."></div>
+      <div class="parts-tabs">
+        <button class="pt on p1c" onclick="showPP(1,'layer',this)">Blade</button>
+        <button class="pt" onclick="showPP(1,'disc',this)">Ratchet</button>
+        <button class="pt" onclick="showPP(1,'driver',this)">Bit</button>
+      </div>
+      <div class="pp on" id="pp1-layer"><div class="pcat">BLADE — Energy layer, determines contact &amp; burst</div><div class="parts-grid" id="pg1-layer"></div></div>
+      <div class="pp" id="pp1-disc"><div class="pcat">RATCHET — Weight &amp; height, affects stability &amp; KO resistance</div><div class="parts-grid" id="pg1-disc"></div></div>
+      <div class="pp" id="pp1-driver"><div class="pcat">BIT (Driver) — Tip type controls movement &amp; stamina</div><div class="parts-grid" id="pg1-driver"></div></div>
+      <div class="bsum">
+        <div class="bsum-title">Current Build</div>
+        <div class="bsum-chips">
+          <div class="bchip p1c" id="bc1-layer">Blade: —</div>
+          <div class="bchip p1c" id="bc1-disc">Ratchet: —</div>
+          <div class="bchip p1c" id="bc1-driver">Bit: —</div>
+        </div>
+        <div class="bsum-stats">
+          <div class="bss"><div class="bssv p1c" id="bs1-atk">0</div><div class="bssl" style="color:var(--atk)">ATK</div></div>
+          <div class="bss"><div class="bssv p1c" id="bs1-def">0</div><div class="bssl" style="color:var(--def)">DEF</div></div>
+          <div class="bss"><div class="bssv p1c" id="bs1-stm">0</div><div class="bssl" style="color:var(--stm)">STM</div></div>
+          <div class="bss"><div class="bssv p1c" id="bs1-spd">0</div><div class="bssl" style="color:var(--spd)">SPD</div></div>
+          <div class="bss"><div class="bssv p1c" id="bs1-bst">0</div><div class="bssl" style="color:var(--bst)">BST</div></div>
+        </div>
+      </div>
+      <div class="type-sec">
+        <span class="tseclabel">Type</span>
+        <div class="type-row">
+          <div class="tbtn on p1c" data-p="1" data-t="attack"  onclick="selT(1,'attack',this)">⚔ Attack</div>
+          <div class="tbtn"        data-p="1" data-t="defense" onclick="selT(1,'defense',this)">🛡 Defense</div>
+          <div class="tbtn"        data-p="1" data-t="stamina" onclick="selT(1,'stamina',this)">🌀 Stamina</div>
+          <div class="tbtn"        data-p="1" data-t="balance" onclick="selT(1,'balance',this)">⚖ Balance</div>
+        </div>
+        <div class="tdesc" id="td1">Attack: aggressive, fast, high burst damage — but burns stamina quickly and risks self-KO on misses.</div>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="player-col p2c">
+      <div class="col-top"><h2>⬡ Player 2</h2><input class="bname-in" id="name2" value="Wizard Rod" placeholder="Bey name..."></div>
+      <div class="parts-tabs">
+        <button class="pt on p2c" onclick="showPP(2,'layer',this)">Blade</button>
+        <button class="pt" onclick="showPP(2,'disc',this)">Ratchet</button>
+        <button class="pt" onclick="showPP(2,'driver',this)">Bit</button>
+      </div>
+      <div class="pp on" id="pp2-layer"><div class="pcat">BLADE — Energy layer, determines contact &amp; burst</div><div class="parts-grid" id="pg2-layer"></div></div>
+      <div class="pp" id="pp2-disc"><div class="pcat">RATCHET — Weight &amp; height, affects stability &amp; KO resistance</div><div class="parts-grid" id="pg2-disc"></div></div>
+      <div class="pp" id="pp2-driver"><div class="pcat">BIT (Driver) — Tip type controls movement &amp; stamina</div><div class="parts-grid" id="pg2-driver"></div></div>
+      <div class="bsum">
+        <div class="bsum-title">Current Build</div>
+        <div class="bsum-chips">
+          <div class="bchip p2c" id="bc2-layer">Blade: —</div>
+          <div class="bchip p2c" id="bc2-disc">Ratchet: —</div>
+          <div class="bchip p2c" id="bc2-driver">Bit: —</div>
+        </div>
+        <div class="bsum-stats">
+          <div class="bss"><div class="bssv p2c" id="bs2-atk">0</div><div class="bssl" style="color:var(--atk)">ATK</div></div>
+          <div class="bss"><div class="bssv p2c" id="bs2-def">0</div><div class="bssl" style="color:var(--def)">DEF</div></div>
+          <div class="bss"><div class="bssv p2c" id="bs2-stm">0</div><div class="bssl" style="color:var(--stm)">STM</div></div>
+          <div class="bss"><div class="bssv p2c" id="bs2-spd">0</div><div class="bssl" style="color:var(--spd)">SPD</div></div>
+          <div class="bss"><div class="bssv p2c" id="bs2-bst">0</div><div class="bssl" style="color:var(--bst)">BST</div></div>
+        </div>
+      </div>
+      <div class="type-sec">
+        <span class="tseclabel">Type</span>
+        <div class="type-row">
+          <div class="tbtn"        data-p="2" data-t="attack"  onclick="selT(2,'attack',this)">⚔ Attack</div>
+          <div class="tbtn on p2c" data-p="2" data-t="defense" onclick="selT(2,'defense',this)">🛡 Defense</div>
+          <div class="tbtn"        data-p="2" data-t="stamina" onclick="selT(2,'stamina',this)">🌀 Stamina</div>
+          <div class="tbtn"        data-p="2" data-t="balance" onclick="selT(2,'balance',this)">⚖ Balance</div>
+        </div>
+        <div class="tdesc" id="td2">Defense: built to absorb hits and counter. Lower speed but high KO resistance and damage reduction.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="launch-wrap">
+    <button class="launch-btn" onclick="launchBattle()">⚡ LET IT RIP ⚡</button>
+    <div class="launch-note">Select all 3 parts per Bey · Stats combine across Blade + Ratchet + Bit</div>
+  </div>
+</div>
+
+<!-- ══════════════ BATTLE ══════════════ -->
+<div id="battle-screen" style="display:none">
+  <div class="battle-layout">
+
+    <div class="bpanel p1">
+      <h3>Player 1</h3>
+      <div class="bpname" id="b-n1"></div>
+      <div class="st-indicator">
+        <div class="sti-name" id="sti-name"></div>
+        <div class="sti-mods" id="sti-mods1"></div>
+      </div>
+      <div class="bbar"><div class="bbl"><span>HP</span><span id="hp1t">100</span></div><div class="bbg"><div class="bbf hpf" id="hp1b" style="width:100%"></div></div></div>
+      <div class="bbar"><div class="bbl"><span>STAMINA</span><span id="st1t">—</span></div><div class="bbg"><div class="bbf stf" id="st1b" style="width:100%"></div></div></div>
+      <div class="bstat"><span>ATK</span><span id="ba1-atk"></span></div>
+      <div class="bstat"><span>DEF</span><span id="ba1-def"></span></div>
+      <div class="bstat"><span>STM</span><span id="ba1-stm"></span></div>
+      <div class="bstat"><span>SPD</span><span id="ba1-spd"></span></div>
+      <div class="bstat"><span>BST</span><span id="ba1-bst"></span></div>
+      <div class="bstat"><span>TYPE</span><span id="ba1-typ"></span></div>
+      <div class="bparts">
+        <div class="bpl" id="bp1-layer"></div>
+        <div class="bpl" id="bp1-disc"></div>
+        <div class="bpl" id="bp1-driver"></div>
+      </div>
+      <div class="elog" id="log1"></div>
+    </div>
+
+    <div class="bcwrap">
+      <div class="binfo">
+        <div class="rdisp" id="rdisp">Round 0</div>
+        <div class="bstatus" id="bstatus">SPINNING!</div>
+        <div class="tnotice" id="tnotice"></div>
+      </div>
+      <canvas id="arenaCanvas"></canvas>
+      <div class="score-row">
+        <div class="score-box p1"><div class="sc-val" id="sc1">0</div><div class="sc-lab" id="scl1">P1 PTS</div></div>
+        <div class="score-sep">SCORE</div>
+        <div class="score-box p2"><div class="sc-val" id="sc2">0</div><div class="sc-lab" id="scl2">P2 PTS</div></div>
+      </div>
+      <div class="btns">
+        <button class="bbtn pri" id="fightBtn" onclick="doRound()">⚔ CLASH!</button>
+        <button class="bbtn" onclick="goToStadium()">↩ REBUILD</button>
+      </div>
+    </div>
+
+    <div class="bpanel p2">
+      <h3>Player 2</h3>
+      <div class="bpname" id="b-n2"></div>
+      <div class="st-indicator">
+        <div class="sti-name" id="sti-name2"></div>
+        <div class="sti-mods" id="sti-mods2"></div>
+      </div>
+      <div class="bbar"><div class="bbl"><span>HP</span><span id="hp2t">100</span></div><div class="bbg"><div class="bbf hpf" id="hp2b" style="width:100%"></div></div></div>
+      <div class="bbar"><div class="bbl"><span>STAMINA</span><span id="st2t">—</span></div><div class="bbg"><div class="bbf stf" id="st2b" style="width:100%"></div></div></div>
+      <div class="bstat"><span>ATK</span><span id="ba2-atk"></span></div>
+      <div class="bstat"><span>DEF</span><span id="ba2-def"></span></div>
+      <div class="bstat"><span>STM</span><span id="ba2-stm"></span></div>
+      <div class="bstat"><span>SPD</span><span id="ba2-spd"></span></div>
+      <div class="bstat"><span>BST</span><span id="ba2-bst"></span></div>
+      <div class="bstat"><span>TYPE</span><span id="ba2-typ"></span></div>
+      <div class="bparts">
+        <div class="bpl" id="bp2-layer"></div>
+        <div class="bpl" id="bp2-disc"></div>
+        <div class="bpl" id="bp2-driver"></div>
+      </div>
+      <div class="elog" id="log2"></div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<div id="winner-overlay">
+  <div class="win-x-line"></div>
+  <div id="winner-title"></div>
+  <div id="winner-method"></div>
+  <div id="winner-sub"></div>
+  <button class="pa-btn" onclick="goToStadium()">⚙ REBUILD &amp; REMATCH</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  STADIUMS
+// ════════════════════════════════════════════════════
+const STADIUMS = [
+  {
+    id:'xtreme', name:'Xtreme Stadium', tag:'Tournament Standard · BX-10',
+    color:'#00ff88', color2:'#004422',
+    shape:'square',
+    desc:'The official tournament standard for Beyblade X. Square design with Xtreme Lines (X-Rails) that trigger Xtreme Dash — sudden acceleration that powers attack types. Three exits: two Over Zones (2pt) and one Xtreme Zone (3pt). Favours aggressive builds.',
+    mods:[
+      {label:'Attack DMG +25%', cls:'mod-boost', stat:'atkMult', val:1.25},
+      {label:'Speed +20%', cls:'mod-boost', stat:'spdMult', val:1.20},
+      {label:'Stamina Drain +15%', cls:'mod-drain', stat:'drainMult', val:1.15},
+      {label:'Xtreme Dash chance', cls:'mod-boost', stat:'xtremeDash', val:true},
+    ],
+    atkMult:1.25, defMult:1.0, spdMult:1.20, drainMult:1.15, stmMult:1.0,
+    xtremeDash:true, xtremeFinishPts:3, overFinishPts:2,
+    xtremeZones:2
+  },
+  {
+    id:'wide', name:'Wide Xtreme Stadium', tag:'3-Blader Format · BX-32',
+    color:'#bb55ff', color2:'#330044',
+    shape:'wide',
+    desc:'Wider rectangular design with larger battle area. Two corner Xtreme Zones (3pt) and one wide central Over Zone (2pt). Provides more room for movement — stamina and balance types can outmanoeuvre attack builds. Xtreme Dash still active.',
+    mods:[
+      {label:'Attack DMG +10%', cls:'mod-boost', stat:'atkMult', val:1.10},
+      {label:'Stamina +15%', cls:'mod-boost', stat:'stmMult', val:1.15},
+      {label:'Speed +10%', cls:'mod-boost', stat:'spdMult', val:1.10},
+      {label:'Xtreme Dash (reduced)', cls:'mod-neutral', stat:'xtremeDash', val:true},
+    ],
+    atkMult:1.10, defMult:1.0, spdMult:1.10, drainMult:1.0, stmMult:1.15,
+    xtremeDash:true, xtremeFinishPts:3, overFinishPts:2,
+    xtremeZones:2
+  },
+  {
+    id:'infinity', name:'Infinity Stadium', tag:'Advanced · BX-46',
+    color:'#ff9933', color2:'#331a00',
+    shape:'infinity',
+    desc:'Narrow rectangular design. The Infinity Dash allows consecutive Xtreme Dashes along one rail — chains of speed that devastate opponents. Very high knockout frequency. Attack types are extremely powerful here but also at risk from their own recoil.',
+    mods:[
+      {label:'Attack DMG +35%', cls:'mod-boost', stat:'atkMult', val:1.35},
+      {label:'Speed +30%', cls:'mod-boost', stat:'spdMult', val:1.30},
+      {label:'Stamina Drain +25%', cls:'mod-drain', stat:'drainMult', val:1.25},
+      {label:'Infinity Dash chains', cls:'mod-boost', stat:'xtremeDash', val:true},
+    ],
+    atkMult:1.35, defMult:0.9, spdMult:1.30, drainMult:1.25, stmMult:0.85,
+    xtremeDash:true, xtremeFinishPts:3, overFinishPts:2,
+    xtremeZones:3
+  },
+  {
+    id:'defense', name:'Defense Bowl', tag:'Classic Round · Stamina/Defense',
+    color:'#4488ff', color2:'#001133',
+    shape:'round',
+    desc:'Smooth, round classic bowl stadium. No Xtreme Rails — beys spin freely without sudden acceleration. Very low knockout frequency. Stamina and Defense types thrive here, grinding opponents down over time. Attack types lose their biggest advantage.',
+    mods:[
+      {label:'Defense DMG +20%', cls:'mod-boost', stat:'defMult', val:1.20},
+      {label:'Stamina +25%', cls:'mod-boost', stat:'stmMult', val:1.25},
+      {label:'Attack DMG −20%', cls:'mod-drain', stat:'atkMult', val:0.80},
+      {label:'No Xtreme Dash', cls:'mod-neutral', stat:'xtremeDash', val:false},
+    ],
+    atkMult:0.80, defMult:1.20, spdMult:0.85, drainMult:0.80, stmMult:1.25,
+    xtremeDash:false, xtremeFinishPts:0, overFinishPts:1,
+    xtremeZones:0
+  },
+  {
+    id:'stamina', name:'Tornado Ridge', tag:'Stamina Special · Smooth Floor',
+    color:'#44ffaa', color2:'#003322',
+    shape:'round',
+    desc:'Wide round bowl with ultra-smooth floor and raised tornado ridge around the outer edge. Minimal friction maximises spin time. Stamina types can outspin almost anything here. Defense types are stable. Attack types struggle without rail boosts.',
+    mods:[
+      {label:'Stamina +35%', cls:'mod-boost', stat:'stmMult', val:1.35},
+      {label:'Drain −30%', cls:'mod-boost', stat:'drainMult', val:0.70},
+      {label:'Attack DMG −15%', cls:'mod-drain', stat:'atkMult', val:0.85},
+      {label:'No Xtreme Dash', cls:'mod-neutral', stat:'xtremeDash', val:false},
+    ],
+    atkMult:0.85, defMult:1.0, spdMult:0.90, drainMult:0.70, stmMult:1.35,
+    xtremeDash:false, xtremeFinishPts:0, overFinishPts:1,
+    xtremeZones:0
+  },
+  {
+    id:'battle', name:'Xtreme Battle Arena', tag:'Chaos Mode · High Risk',
+    color:'#ff3a6e', color2:'#330011',
+    shape:'square',
+    desc:'High-chaos arena with reinforced X-Rails on all four sides. Xtreme Dashes can occur from any angle. All damage is amplified and stamina burns fast. Short, explosive matches — every build is high risk. Pure skill determines the winner.',
+    mods:[
+      {label:'All DMG +20%', cls:'mod-boost', stat:'atkMult', val:1.20},
+      {label:'Stamina Drain +30%', cls:'mod-drain', stat:'drainMult', val:1.30},
+      {label:'Speed +25%', cls:'mod-boost', stat:'spdMult', val:1.25},
+      {label:'Multi-rail Xtreme Dash', cls:'mod-boost', stat:'xtremeDash', val:true},
+    ],
+    atkMult:1.20, defMult:1.20, spdMult:1.25, drainMult:1.30, stmMult:0.90,
+    xtremeDash:true, xtremeFinishPts:3, overFinishPts:2,
+    xtremeZones:4
+  }
+];
+
+let selectedStadium = STADIUMS[0];
+
+// ════════════════════════════════════════════════════
+//  PARTS DATABASE  (Beyblade X naming: Blade / Ratchet / Bit)
+// ════════════════════════════════════════════════════
+const PARTS = {
+  layer:[
+    {id:'dran',    name:'Dagger Dran',  badge:'a', atk:9, def:2, stm:2, spd:8, bst:4, desc:'Serrated blade designed for rapid Xtreme Dash strikes. High attack and speed. Engages X-Rails aggressively — powerful in Xtreme stadiums but self-burst risk is real.'},
+    {id:'knight',  name:'Helm Knight', badge:'d', atk:2, def:9, stm:5, spd:2, bst:9, desc:'Shock-absorbing rounded blades that dampen incoming attack. Best-in-class burst resistance. Excellent KO defense but minimal offensive output.'},
+    {id:'wizard',  name:'Wizard Rod',  badge:'s', atk:1, def:4, stm:10,spd:3, bst:7, desc:'Wide centrifugal blade generates maximum outward force. Exceptional stamina — built to outlast everything. Engages rails rarely; relies on pure spin endurance.'},
+    {id:'phoenix', name:'Soar Phoenix',badge:'a', atk:8, def:3, stm:3, spd:9, bst:5, desc:'High-launch angle blade. Very fast rail engagement for Xtreme Dashes. Attack-speed hybrid — powerful in Xtreme stadiums. Moderate burst resistance.'},
+    {id:'rhino',   name:'Horn Rhino',  badge:'d', atk:3, def:8, stm:6, spd:3, bst:8, desc:'Heavy defensive blade with shock-absorbing contact points. Redirects opponent force rather than absorbing it. Strong KO resistance and counter potential.'},
+    {id:'shark',   name:'Shark Scale', badge:'b', atk:6, def:5, stm:7, spd:5, bst:6, desc:'Oval-blade with reverse-bounce capability in Over Zones. Good balance of attack and stamina. Can escape Over Zones consistently — versatile in all stadiums.'},
+    {id:'wyvern',  name:'Wyvern Hover',badge:'a', atk:7, def:3, stm:4, spd:10,bst:4, desc:'Fastest blade in the roster. Top-tier speed for Xtreme Dash chains in Infinity Stadium. High recoil — risky in confined spaces. Explosive but fragile.'},
+    {id:'incendio',name:'Scythe Inc.', badge:'b', atk:5, def:5, stm:6, spd:6, bst:7, desc:'Tapered scythe blade balances early attack power with endurance. True balance blade — adapts to any stadium. No peak, no critical weakness.'},
+  ],
+  disc:[
+    {id:'r3',  name:'3-60',  badge:'a', atk:5, def:3, stm:4, spd:7, bst:4, desc:'Low-height ratchet. Closer to the stadium floor — attacks from below, ideal for knocking opponents off-balance. Lightweight; favours attack builds.'},
+    {id:'r4',  name:'4-60',  badge:'b', atk:4, def:5, stm:5, spd:5, bst:5, desc:'Standard-height balanced ratchet. 4-spoke symmetrical weight distribution. Tournament versatile — solid across all types and stadiums. Most common competitive choice.'},
+    {id:'r9',  name:'9-60',  badge:'d', atk:2, def:6, stm:7, spd:3, bst:9, desc:'Heavy 9-spoke ratchet with maximum burst resistance. Hardest to burst in the game. High stability — keeps bey planted. Preferred by defense and stamina builds.'},
+    {id:'r1',  name:'1-60',  badge:'s', atk:3, def:4, stm:8, spd:4, bst:7, desc:'Single heavy arm provides asymmetric weight that improves reverse-bounce potential. Popular in stamina builds — helps escape Over Zones. Good burst resistance.'},
+    {id:'r5h', name:'5-80',  badge:'d', atk:2, def:7, stm:6, spd:2, bst:8, desc:'High-height ratchet at 80mm. Elevated stance resists low attacks. Heavy 5-spoke distribution adds KO resistance. Ideal for tall defense builds.'},
+    {id:'r3h', name:'3-80',  badge:'b', atk:4, def:6, stm:5, spd:4, bst:6, desc:'High 80mm height with 3-spoke layout. Tall defensive profile disrupts opponents trying to attack from below. Good burst resistance and stability.'},
+    {id:'r7',  name:'7-60',  badge:'s', atk:1, def:5, stm:9, spd:3, bst:8, desc:'Maximum-stamina 7-spoke ratchet. Highest outward weight distribution for maximum spin retention. Cornerstone of competitive stamina builds.'},
+    {id:'r2',  name:'2-60',  badge:'a', atk:7, def:2, stm:3, spd:8, bst:3, desc:'Ultra-light 2-spoke ratchet. Minimum weight for maximum speed — aggressive movement and faster Xtreme Dash engagement. Very low KO resistance.'},
+  ],
+  driver:[
+    {id:'flat',    name:'Flat (F)',    badge:'a', atk:8, def:1, stm:2, spd:10,bst:4, desc:'Flat plastic tip. Maximum friction, maximum speed. Highly aggressive banking pattern — engages Xtreme Rails constantly. Burns through stamina extremely fast.'},
+    {id:'rush',    name:'Rush (R)',    badge:'a', atk:7, def:2, stm:3, spd:9, bst:5, desc:'Semi-flat rubber-edge tip. Controlled aggression — more predictable banking than Flat. Slightly better stamina. Top choice for competitive attack builds.'},
+    {id:'needle',  name:'Needle (N)',  badge:'d', atk:1, def:9, stm:5, spd:1, bst:8, desc:'Narrow point tip. Stays near stadium centre, very low movement. Maximum KO resistance from stationary position. Defense/stamina hybrid behaviour.'},
+    {id:'freeball', name:'Free Ball (FB)',badge:'s', atk:1, def:6, stm:10,spd:2, bst:9, desc:'Free-spinning ball tip. Near-zero friction. Maximum stamina in the roster. Suppresses Xtreme Dash engagement. Best for stamina builds in smooth-floor stadiums.'},
+    {id:'tapered', name:'Tapered (T)', badge:'b', atk:5, def:5, stm:6, spd:5, bst:6, desc:'Tapered cone tip. Balanced initial movement that shifts toward stamina mode. Engages rails moderately. Best bit for true balance builds — consistent in all stadiums.'},
+    {id:'gear_flat',name:'Gear Flat (GF)',badge:'a',atk:9, def:2, stm:1, spd:10,bst:3, desc:'Toothed flat tip designed to engage X-Rails every pass. Maximum Xtreme Dash frequency. Explosive attack potential in Xtreme stadiums. Extremely fragile stamina.'},
+    {id:'highxtend',name:'High Xtend+',badge:'s', atk:2, def:7, stm:9, spd:3, bst:8, desc:'Height-adjustable ball-bearing tip. Can shift between attack and stamina mode. Excellent stamina and KO resistance in both modes. Top-tier versatile bit.'},
+    {id:'orbit',   name:'Orbit (O)',   badge:'d', atk:2, def:8, stm:8, spd:2, bst:10,desc:'Free-rotating ball tip. Highest burst resistance of all bits. Free-spin reduces friction for excellent stamina. Best defensive bit — resists both KOs and bursts.'},
+  ]
+};
+
+const TDESC={
+  attack:'Attack: aggressive, fast, high burst damage — burns stamina quickly and risks self-KO on misses.',
+  defense:'Defense: absorbs hits, counters. Lower speed but high KO resistance and consistent damage reduction.',
+  stamina:'Stamina: outlasts opponents through spin endurance. Low burst damage, exceptional staying power.',
+  balance:'Balance: no type weakness or advantage. High burst resistance. Versatile — adapts to any matchup.'
+};
+const TYPE_ADV={attack:'stamina',defense:'attack',stamina:'defense',balance:null};
+const TYPE_LOSES={attack:'defense',defense:'stamina',stamina:'attack',balance:null};
+const TYPE_DRAIN={attack:1.7,defense:0.75,stamina:0.62,balance:1.0};
+const TYPE_SPD_MOD={attack:1.35,defense:0.80,stamina:0.88,balance:1.05};
+
+const P={1:{name:'',type:'attack',layer:null,disc:null,driver:null},
+         2:{name:'',type:'defense',layer:null,disc:null,driver:null}};
+
+// ════════════════════════════════════════════════════
+//  DRAW STADIUM PREVIEW
+// ════════════════════════════════════════════════════
+function drawStadiumPreview(canvas, st){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const col=st.color, col2=st.color2;
+
+  if(st.shape==='round'){
+    // Round bowl
+    const cx=W/2,cy=H/2,r=H*.42;
+    const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    bg.addColorStop(0,'#0d1a28');bg.addColorStop(.7,'#060d16');bg.addColorStop(1,'#020508');
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+    // tornado ridge
+    ctx.beginPath();ctx.arc(cx,cy,r*.75,0,Math.PI*2);ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,r*.4,0,Math.PI*2);ctx.strokeStyle=col+'22';ctx.lineWidth=1;ctx.stroke();
+    // exits
+    if(st.xtremeZones===0){
+      ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx-r-8,cy);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx+r,cy);ctx.lineTo(cx+r+8,cy);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+    }
+  } else if(st.shape==='square'){
+    const pad=H*.1, rnd=4;
+    const x=pad,y=pad,w=W-pad*2,h=H-pad*2;
+    ctx.fillStyle='#060d16';ctx.beginPath();ctx.roundRect(x,y,w,h,rnd);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,rnd);ctx.stroke();
+    // X-lines (rails) - horizontal
+    const railY=y+h*.35;
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x+10,railY);ctx.lineTo(x+w-10,railY);ctx.stroke();
+    ctx.setLineDash([]);
+    // gear marks on rail
+    for(let gx=x+20;gx<x+w-15;gx+=14){
+      ctx.beginPath();ctx.rect(gx,railY-3,6,6);ctx.fillStyle=col+'88';ctx.fill();
+    }
+    // exits on one side
+    const exitW=12,exitH=18;
+    ctx.fillStyle=col+'55';
+    ctx.fillRect(x+w*.2,y-2,exitW,exitH); // left exit
+    ctx.fillRect(x+w*.5-exitW/2,y-2,exitW,exitH); // center
+    ctx.fillRect(x+w*.8-exitW,y-2,exitW,exitH); // right exit
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    ['OVER','X','OVER'].forEach((lbl,i)=>{
+      const ex=[x+w*.2+exitW/2, x+w*.5, x+w*.8-exitW/2][i];
+      ctx.fillStyle=col;ctx.font="bold 7px 'Exo 2',sans-serif";ctx.textAlign='center';
+      ctx.fillText(lbl,ex,y+12);
+    });
+  } else if(st.shape==='wide'){
+    const padX=H*.06,padY=H*.14;
+    const x=padX,y=padY,w=W-padX*2,h=H-padY*2;
+    ctx.fillStyle='#060d16';ctx.beginPath();ctx.roundRect(x,y,w,h,3);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,3);ctx.stroke();
+    const railY=y+h*.38;
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x+8,railY);ctx.lineTo(x+w-8,railY);ctx.stroke();
+    ctx.setLineDash([]);
+    for(let gx=x+16;gx<x+w-12;gx+=12){ctx.beginPath();ctx.rect(gx,railY-3,5,6);ctx.fillStyle=col+'88';ctx.fill();}
+    ctx.fillStyle=col+'55';
+    ctx.fillRect(x+6,y-2,14,16);ctx.fillRect(x+w-20,y-2,14,16);
+    ctx.fillRect(x+w/2-8,y-2,16,14);
+    ctx.fillStyle=col;ctx.font="bold 7px 'Exo 2',sans-serif";ctx.textAlign='center';
+    ctx.fillText('X',x+13,y+9);ctx.fillText('X',x+w-13,y+9);ctx.fillText('OVER',x+w/2,y+9);
+  } else if(st.shape==='infinity'){
+    const padX=H*.12,padY=H*.06;
+    const x=padX,y=padY,w=W-padX*2,h=H-padY*2;
+    ctx.fillStyle='#060d16';ctx.beginPath();ctx.roundRect(x,y,w,h,3);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,3);ctx.stroke();
+    // two parallel rails
+    [h*.3,h*.6].forEach(dy=>{
+      const ry=y+dy;
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+      ctx.beginPath();ctx.moveTo(x+8,ry);ctx.lineTo(x+w-8,ry);ctx.stroke();
+      ctx.setLineDash([]);
+      for(let gx=x+14;gx<x+w-10;gx+=11){ctx.beginPath();ctx.rect(gx,ry-2,5,4);ctx.fillStyle=col+'88';ctx.fill();}
+    });
+    ctx.fillStyle=col+'55';
+    ctx.fillRect(x-2,y+h*.15,14,20);ctx.fillRect(x-2,y+h*.6,14,20);ctx.fillRect(x+w-12,y+h*.35,14,20);
+    ctx.fillStyle=col;ctx.font="bold 6px 'Exo 2',sans-serif";ctx.textAlign='center';
+    ctx.fillText('X',x+5,y+h*.25);ctx.fillText('X',x+5,y+h*.7);ctx.fillText('OVR',x+w-5,y+h*.45);
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  RENDER STADIUM CARDS
+// ════════════════════════════════════════════════════
+function renderStadiums(){
+  const grid=document.getElementById('stadium-grid');
+  grid.innerHTML=STADIUMS.map(st=>{
+    const isSel=selectedStadium.id===st.id;
+    return `<div class="st-card${isSel?' selected':''}" id="stc-${st.id}" onclick="pickStadium('${st.id}')">
+      <div class="st-check">${isSel?'✓':''}</div>
+      <div class="st-canvas-wrap"><canvas id="stcanv-${st.id}" width="200" height="110"></canvas></div>
+      <div class="st-info">
+        <div class="st-name">${st.name}</div>
+        <div class="st-tag">${st.tag}</div>
+        <div class="st-modifier-row">${st.mods.map(m=>`<span class="st-mod ${m.cls}">${m.label}</span>`).join('')}</div>
+        <div class="st-desc">${st.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+  STADIUMS.forEach(st=>{
+    const c=document.getElementById(`stcanv-${st.id}`);
+    if(c) drawStadiumPreview(c,st);
+  });
+}
+
+function pickStadium(id){
+  selectedStadium=STADIUMS.find(s=>s.id===id);
+  document.querySelectorAll('.st-card').forEach(c=>{c.classList.remove('selected');c.querySelector('.st-check').textContent='';});
+  const card=document.getElementById(`stc-${id}`);
+  card.classList.add('selected');card.querySelector('.st-check').textContent='✓';
+}
+
+renderStadiums();
+
+function goToBuild(){
+  document.getElementById('stadium-screen').style.display='none';
+  document.getElementById('build-screen').style.display='block';
+  document.getElementById('s1').classList.remove('active');document.getElementById('s1').classList.add('done');
+  document.getElementById('s2').classList.add('active');
+}
+function goToStadium(){
+  document.getElementById('winner-overlay').classList.remove('show');
+  document.getElementById('battle-screen').style.display='none';
+  document.getElementById('build-screen').style.display='none';
+  document.getElementById('stadium-screen').style.display='block';
+  ['s1','s2','s3'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('active','done');});
+  document.getElementById('s1').classList.add('active');
+  if(animId!==null){cancelAnimationFrame(animId);animId=null;}
+  particles=[];koAnim={active:false,bey:-1,vx:0,vy:0,timer:0,winner:-1,method:'',pts:0};
+  initArena();
+}
+
+// ════════════════════════════════════════════════════
+//  BUILD UI
+// ════════════════════════════════════════════════════
+const badgeMap={a:'ba',d:'bd',s:'bs2',b:'bb'};
+
+function pbar(val,cls){return`<div class="pbt"><div class="pbf ${cls}" style="width:${val*10}%"></div></div>`;}
+
+function renderPartCard(p,slot,part){
+  const pclass=P[p][slot]?.id===part.id?`on p${p}c`:'';
+  return`<div class="pc ${pclass}" id="pcard${p}-${slot}-${part.id}" onclick="pickPart(${p},'${slot}','${part.id}')">
+    <div class="pname">${part.name}</div>
+    <span class="pbadge ${badgeMap[part.badge]}">${{a:'attack',d:'defense',s:'stamina',b:'balance'}[part.badge]}</span>
+    <div class="pbars">
+      <div class="pbr"><span class="pbl">ATK</span>${pbar(part.atk,'a')}</div>
+      <div class="pbr"><span class="pbl">DEF</span>${pbar(part.def,'d')}</div>
+      <div class="pbr"><span class="pbl">STM</span>${pbar(part.stm,'s')}</div>
+      <div class="pbr"><span class="pbl">SPD</span>${pbar(part.spd,'sp')}</div>
+      <div class="pbr"><span class="pbl">BST</span>${pbar(part.bst,'b')}</div>
+    </div>
+    <div class="pdesc">${part.desc}</div>
+  </div>`;
+}
+
+function renderAllParts(){
+  [1,2].forEach(p=>{
+    ['layer','disc','driver'].forEach(slot=>{
+      document.getElementById(`pg${p}-${slot}`).innerHTML=PARTS[slot].map(pt=>renderPartCard(p,slot,pt)).join('');
+    });
+  });
+}
+renderAllParts();
+
+function showPP(p,slot,tabEl){
+  ['layer','disc','driver'].forEach(s=>{document.getElementById(`pp${p}-${s}`).classList.remove('on');});
+  document.getElementById(`pp${p}-${slot}`).classList.add('on');
+  tabEl.closest('.parts-tabs').querySelectorAll('.pt').forEach(t=>{t.classList.remove('on','p1c','p2c');});
+  tabEl.classList.add('on',`p${p}c`);
+}
+
+function pickPart(p,slot,id){
+  P[p][slot]=PARTS[slot].find(x=>x.id===id);
+  document.getElementById(`pg${p}-${slot}`).innerHTML=PARTS[slot].map(pt=>renderPartCard(p,slot,pt)).join('');
+  updateSum(p);
+}
+
+function getTotal(p){
+  const parts=[P[p].layer,P[p].disc,P[p].driver].filter(Boolean);
+  const t={atk:0,def:0,stm:0,spd:0,bst:0};
+  parts.forEach(pt=>{t.atk+=pt.atk;t.def+=pt.def;t.stm+=pt.stm;t.spd+=pt.spd;t.bst+=pt.bst;});
+  return t;
+}
+
+function updateSum(p){
+  const slotNames={layer:'Blade',disc:'Ratchet',driver:'Bit'};
+  ['layer','disc','driver'].forEach(s=>{
+    const chip=document.getElementById(`bc${p}-${s}`);
+    if(P[p][s]){chip.textContent=slotNames[s]+': '+P[p][s].name;chip.classList.add('on');}
+    else{chip.textContent=slotNames[s]+': —';chip.classList.remove('on');}
+  });
+  const t=getTotal(p);
+  ['atk','def','stm','spd','bst'].forEach(k=>{document.getElementById(`bs${p}-${k}`).textContent=t[k];});
+}
+
+function selT(p,type,el){
+  P[p].type=type;
+  document.querySelectorAll(`[data-p="${p}"]`).forEach(b=>{b.classList.remove('on','p1c','p2c');});
+  el.classList.add('on',`p${p}c`);
+  document.getElementById(`td${p}`).textContent=TDESC[type];
+}
+
+// ════════════════════════════════════════════════════
+//  ARENA CANVAS
+// ════════════════════════════════════════════════════
+const arCanvas=document.getElementById('arenaCanvas');
+const ctx2=arCanvas.getContext('2d');
+let beys=[],animId=null,particles=[];
+let stScore={1:0,2:0};
+
+function getArenaSize(){
+  const vw=Math.min(window.innerWidth,1320);
+  const avail=Math.max(280,Math.min(420,vw-440));
+  return avail;
+}
+
+function initArena(){
+  const sz=getArenaSize();
+  arCanvas.width=sz; arCanvas.height=sz;
+  drawEmptyArena();
+}
+initArena();
+
+// Rail flash state  
+let railFlash={active:false,bey:-1,timer:0};
+// KO animation state
+let koAnim={active:false,bey:-1,vx:0,vy:0,timer:0,winner:-1,method:'',pts:0};
+
+function drawEmptyArena(){
+  const W=arCanvas.width,H=arCanvas.height;
+  const st=selectedStadium||STADIUMS[0];
+  const sz=Math.min(W,H);
+  ctx2.clearRect(0,0,W,H);
+
+  if(st.shape==='round'||!st.shape){
+    drawRoundArena(W,H,sz,st);
+  } else {
+    drawRectArena(W,H,sz,st);
+  }
+}
+
+function drawRoundArena(W,H,sz,st){
+  const cx=W/2,cy=H/2,r=sz*.44;
+  // Floor gradient
+  const bg=ctx2.createRadialGradient(cx,cy,0,cx,cy,r);
+  bg.addColorStop(0,'#111e30');bg.addColorStop(.6,'#080f1c');bg.addColorStop(1,'#030609');
+  ctx2.beginPath();ctx2.arc(cx,cy,r,0,Math.PI*2);ctx2.fillStyle=bg;ctx2.fill();
+  // Floor grid lines (subtle but visible)
+  ctx2.save();ctx2.globalAlpha=0.12;ctx2.strokeStyle='#4488cc';ctx2.lineWidth=0.5;
+  for(let d=r*.25;d<r;d+=r*.2){ctx2.beginPath();ctx2.arc(cx,cy,d,0,Math.PI*2);ctx2.stroke();}
+  ctx2.restore();
+  // Outer wall — thick bright rim
+  ctx2.beginPath();ctx2.arc(cx,cy,r,0,Math.PI*2);
+  ctx2.strokeStyle=st.color;ctx2.lineWidth=3;
+  ctx2.shadowColor=st.color;ctx2.shadowBlur=12;ctx2.stroke();ctx2.shadowBlur=0;
+  // Inner rim detail
+  ctx2.beginPath();ctx2.arc(cx,cy,r-5,0,Math.PI*2);
+  ctx2.strokeStyle=st.color+'66';ctx2.lineWidth=1;ctx2.stroke();
+  // Tornado ridge rings
+  [.72,.5].forEach(f=>{
+    ctx2.beginPath();ctx2.arc(cx,cy,r*f,0,Math.PI*2);
+    ctx2.strokeStyle=st.color+'44';ctx2.lineWidth=1.5;ctx2.stroke();
+  });
+  // Exit gaps in the wall (Over Zones)
+  const exitAngles=[-Math.PI/2, Math.PI/6, 5*Math.PI/6];
+  exitAngles.forEach((a,i)=>{
+    const gapA=0.12;
+    ctx2.save();
+    ctx2.beginPath();ctx2.arc(cx,cy,r,a-gapA,a+gapA);
+    const ex=cx+Math.cos(a)*(r+6),ey=cy+Math.sin(a)*(r+6);
+    const ew=18,eh=14;
+    ctx2.fillStyle=i===1?st.color+'55':'#ffffff22';
+    ctx2.strokeStyle=i===1?st.color:'#aabbdd';
+    ctx2.fillRect(ex-ew/2,ey-eh/2,ew,eh);
+    ctx2.lineWidth=1.5;ctx2.strokeRect(ex-ew/2,ey-eh/2,ew,eh);
+    ctx2.fillStyle=i===1?st.color:'#cce0ff';
+    ctx2.font="bold 7px 'Exo 2',sans-serif";ctx2.textAlign='center';ctx2.textBaseline='middle';
+    ctx2.fillText(i===1?'X':'OVER',ex,ey);
+    ctx2.textBaseline='alphabetic';
+    ctx2.restore();
+  });
+}
+
+function drawRectArena(W,H,sz,st){
+  const pad=sz*.09,x=pad,y=pad,w=W-pad*2,h=H-pad*2;
+  
+  // Floor base
+  const bg=ctx2.createLinearGradient(x,y,x+w,y+h);
+  bg.addColorStop(0,'#0c1828');bg.addColorStop(1,'#060d18');
+  ctx2.fillStyle=bg;ctx2.beginPath();ctx2.roundRect(x,y,w,h,4);ctx2.fill();
+
+  // Floor grid — visible diagonal pattern like real BeyX stadium
+  ctx2.save();ctx2.globalAlpha=0.09;ctx2.strokeStyle='#4488cc';ctx2.lineWidth=0.5;
+  const gridSpacing=22;
+  for(let gx=x;gx<x+w;gx+=gridSpacing){ctx2.beginPath();ctx2.moveTo(gx,y);ctx2.lineTo(gx,y+h);ctx2.stroke();}
+  for(let gy=y;gy<y+h;gy+=gridSpacing){ctx2.beginPath();ctx2.moveTo(x,gy);ctx2.lineTo(x+w,gy);ctx2.stroke();}
+  ctx2.restore();
+
+  // Center zone circle
+  ctx2.save();ctx2.globalAlpha=0.15;
+  ctx2.beginPath();ctx2.arc(x+w/2,y+h/2,Math.min(w,h)*.28,0,Math.PI*2);
+  ctx2.strokeStyle='#88aacccc';ctx2.lineWidth=1.5;ctx2.stroke();
+  ctx2.restore();
+
+  // Wall outer border — bright and glowing
+  ctx2.strokeStyle=st.color;ctx2.lineWidth=3;
+  ctx2.shadowColor=st.color;ctx2.shadowBlur=14;
+  ctx2.beginPath();ctx2.roundRect(x,y,w,h,4);ctx2.stroke();
+  ctx2.shadowBlur=0;
+  // Inner border detail
+  ctx2.strokeStyle=st.color+'55';ctx2.lineWidth=1;
+  ctx2.beginPath();ctx2.roundRect(x+4,y+4,w-8,h-8,2);ctx2.stroke();
+
+  // Corner glow pockets
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
+    const gr=ctx2.createRadialGradient(cx,cy,0,cx,cy,40);
+    gr.addColorStop(0,st.color+'44');gr.addColorStop(1,'transparent');
+    ctx2.beginPath();ctx2.arc(cx,cy,40,0,Math.PI*2);ctx2.fillStyle=gr;ctx2.fill();
+  });
+
+  // ── X-RAILS (Xtreme Line / X-Celerator Rail) ──
+  if(st.xtremeDash){
+    const flashOn=railFlash.active;
+    const flashCol=flashOn?'#ffffff':st.color;
+    const railAlpha=flashOn?1.0:0.85;
+
+    const drawRail=(rx1,ry1,rx2,ry2)=>{
+      // Rail track background channel
+      ctx2.save();
+      ctx2.strokeStyle='#000000aa';ctx2.lineWidth=9;
+      ctx2.beginPath();ctx2.moveTo(rx1,ry1);ctx2.lineTo(rx2,ry2);ctx2.stroke();
+      // Rail glow
+      ctx2.globalAlpha=railAlpha;
+      ctx2.shadowColor=flashCol;ctx2.shadowBlur=flashOn?18:8;
+      ctx2.strokeStyle=flashCol;ctx2.lineWidth=3;
+      ctx2.beginPath();ctx2.moveTo(rx1,ry1);ctx2.lineTo(rx2,ry2);ctx2.stroke();
+      ctx2.shadowBlur=0;
+      // Gear teeth along rail
+      const dx=rx2-rx1,dy=ry2-ry1,len=Math.sqrt(dx*dx+dy*dy);
+      const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+      const toothSpacing=14;
+      for(let t=toothSpacing;t<len-toothSpacing;t+=toothSpacing){
+        const tx=rx1+ux*t,ty=ry1+uy*t;
+        const ts=4;
+        ctx2.fillStyle=flashOn?'#ffffff':flashCol+'cc';
+        ctx2.beginPath();
+        ctx2.moveTo(tx+px*ts,ty+py*ts);
+        ctx2.lineTo(tx+ux*3,ty+uy*3);
+        ctx2.lineTo(tx-px*ts,ty-py*ts);
+        ctx2.closePath();ctx2.fill();
+      }
+      // Rail edge lines
+      ctx2.globalAlpha=railAlpha*.6;
+      ctx2.strokeStyle=flashCol+'88';ctx2.lineWidth=1;ctx2.setLineDash([2,4]);
+      ctx2.beginPath();ctx2.moveTo(rx1+px*5,ry1+py*5);ctx2.lineTo(rx2+px*5,ry2+py*5);ctx2.stroke();
+      ctx2.beginPath();ctx2.moveTo(rx1-px*5,ry1-py*5);ctx2.lineTo(rx2-px*5,ry2-py*5);ctx2.stroke();
+      ctx2.setLineDash([]);
+      // X-RAIL label
+      ctx2.globalAlpha=0.7;
+      ctx2.fillStyle=flashCol;ctx2.font="bold 8px 'Exo 2',sans-serif";ctx2.textAlign='center';ctx2.textBaseline='middle';
+      ctx2.fillText('X-RAIL',(rx1+rx2)/2,(ry1+ry2)/2-10);
+      ctx2.textBaseline='alphabetic';
+      ctx2.restore();
+    };
+
+    if(st.shape==='infinity'){
+      // Two parallel horizontal rails
+      const r1y=y+h*.28,r2y=y+h*.66;
+      drawRail(x+14,r1y,x+w-14,r1y);
+      drawRail(x+14,r2y,x+w-14,r2y);
+    } else if(st.shape==='wide'){
+      // Single wide rail across middle
+      const ry=y+h*.42;
+      drawRail(x+14,ry,x+w-14,ry);
+    } else {
+      // Square / battle: single rail with short diagonal segments at corners
+      const ry=y+h*.40;
+      drawRail(x+14,ry,x+w-14,ry);
+      if(st.id==='battle'){
+        const ry2=y+h*.68;
+        drawRail(x+14,ry2,x+w-14,ry2);
+      }
+    }
+  }
+
+  // ── EXIT ZONES (Over Zone / Xtreme Zone) ──
+  const exitData=getExitPositions(x,y,w,h,st);
+  exitData.forEach(({ex,ey,ew,eh,lbl,pts})=>{
+    const isX=pts>=3;
+    const zoneCol=isX?st.color:'#88aaddcc';
+    ctx2.fillStyle=isX?st.color+'55':'#6688aa33';
+    ctx2.fillRect(ex,ey,ew,eh);
+    ctx2.shadowColor=isX?st.color:'transparent';ctx2.shadowBlur=isX?8:0;
+    ctx2.strokeStyle=zoneCol;ctx2.lineWidth=1.5;
+    ctx2.strokeRect(ex,ey,ew,eh);
+    ctx2.shadowBlur=0;
+    ctx2.fillStyle=isX?st.color:'#cce0ff';
+    ctx2.font=`bold ${isX?8:7}px 'Exo 2',sans-serif`;ctx2.textAlign='center';ctx2.textBaseline='middle';
+    ctx2.fillText(lbl,ex+ew/2,ey+eh/2);
+    ctx2.textBaseline='alphabetic';
+    // Points badge
+    ctx2.fillStyle=isX?'#000':'#000';
+    ctx2.font="bold 6px 'Exo 2',sans-serif";ctx2.textAlign='center';
+    ctx2.fillStyle=isX?st.color+'cc':'#aabbcc';
+    ctx2.fillText(`${pts}pt`,ex+ew/2,ey+eh/2+8);
+  });
+  ctx2.textAlign='left';
+}
+
+/* ── DRAW BEYBLADE X STYLE TOP ── */
+function drawBey(b, stPct, idx){
+  // Trail
+  b.trail.forEach((pt,i)=>{
+    const a=(i/b.trail.length);
+    ctx2.beginPath();ctx2.arc(pt.x,pt.y,b.r*.5*a,0,Math.PI*2);
+    ctx2.fillStyle=b.gc+(a*.28)+')';ctx2.fill();
+  });
+
+  ctx2.save();
+  ctx2.translate(b.x,b.y);
+
+  // Wobble when low stamina
+  if(b.wobble>0){
+    ctx2.translate(
+      Math.sin(Date.now()*.011+idx)*b.wobble*4,
+      Math.cos(Date.now()*.009+idx)*b.wobble*2.5
+    );
+  }
+  ctx2.rotate(b.angle);
+
+  const r=b.r;
+  const col=b.color;
+
+  // ── OUTER GLOW RING ──
+  const outerGlow=ctx2.createRadialGradient(0,0,r*.6,0,0,r+16);
+  outerGlow.addColorStop(0,b.gc+'0)');
+  outerGlow.addColorStop(.6,b.gc+(0.12+(b.railBurst||0)*.4)+')');
+  outerGlow.addColorStop(1,b.gc+'0)');
+  ctx2.beginPath();ctx2.arc(0,0,r+16,0,Math.PI*2);ctx2.fillStyle=outerGlow;ctx2.fill();
+
+  // ── ENERGY LAYER (blade ring - outermost) ──
+  // Serrated/bladed outer ring — like real BeyX blades
+  ctx2.save();
+  const bladeCount=6;
+  ctx2.beginPath();
+  for(let i=0;i<bladeCount;i++){
+    const a0=(i/bladeCount)*Math.PI*2;
+    const a1=((i+0.5)/bladeCount)*Math.PI*2;
+    const a2=((i+1)/bladeCount)*Math.PI*2;
+    const outerR=r;
+    const innerR=r*.68;
+    if(i===0) ctx2.moveTo(Math.cos(a0)*outerR, Math.sin(a0)*outerR);
+    ctx2.lineTo(Math.cos(a0)*outerR, Math.sin(a0)*outerR);
+    // blade tip
+    ctx2.lineTo(Math.cos(a1)*(outerR+5), Math.sin(a1)*(outerR+5));
+    ctx2.lineTo(Math.cos(a2)*outerR, Math.sin(a2)*outerR);
+    ctx2.lineTo(Math.cos(a2)*innerR, Math.sin(a2)*innerR);
+  }
+  ctx2.closePath();
+  // Blade fill with gradient
+  const bladeGrad=ctx2.createRadialGradient(-r*.3,-r*.3,0,0,0,r+5);
+  bladeGrad.addColorStop(0,lighty(col,.3));
+  bladeGrad.addColorStop(.5,col);
+  bladeGrad.addColorStop(1,darky(col,.4));
+  ctx2.fillStyle=bladeGrad;ctx2.fill();
+  // Blade edge lines
+  ctx2.strokeStyle=lighty(col,.5);ctx2.lineWidth=1.5;
+  ctx2.shadowColor=col;ctx2.shadowBlur=6;ctx2.stroke();ctx2.shadowBlur=0;
+  ctx2.restore();
+
+  // ── RATCHET RING (forge disc equivalent — metallic ring) ──
+  ctx2.save();
+  const ratchetGrad=ctx2.createRadialGradient(-2,-2,0,0,0,r*.65);
+  ratchetGrad.addColorStop(0,'#4a5a70');
+  ratchetGrad.addColorStop(.4,'#2a3545');
+  ratchetGrad.addColorStop(.8,'#161e2c');
+  ratchetGrad.addColorStop(1,'#0c1018');
+  ctx2.beginPath();ctx2.arc(0,0,r*.68,0,Math.PI*2);ctx2.fillStyle=ratchetGrad;ctx2.fill();
+  // Ratchet spokes (number matching the disc ratchet)
+  const spokeCount=4;
+  for(let i=0;i<spokeCount;i++){
+    const a=(i/spokeCount)*Math.PI*2;
+    ctx2.beginPath();
+    ctx2.moveTo(Math.cos(a)*r*.22, Math.sin(a)*r*.22);
+    ctx2.lineTo(Math.cos(a)*r*.62, Math.sin(a)*r*.62);
+    ctx2.strokeStyle='rgba(140,170,210,0.5)';ctx2.lineWidth=2.5;ctx2.stroke();
+  }
+  // Ratchet ring border
+  ctx2.beginPath();ctx2.arc(0,0,r*.68,0,Math.PI*2);
+  ctx2.strokeStyle='rgba(180,200,240,0.35)';ctx2.lineWidth=1.5;ctx2.stroke();
+  ctx2.restore();
+
+  // ── BIT / DRIVER (centre tip housing) ──
+  // Hexagonal centre plate — like real BeyX Bit housing
+  ctx2.save();
+  const bitR=r*.42;
+  const bitGrad=ctx2.createRadialGradient(-bitR*.3,-bitR*.3,0,0,0,bitR);
+  bitGrad.addColorStop(0,lighty(col,.25));
+  bitGrad.addColorStop(.45,col+'cc');
+  bitGrad.addColorStop(1,darky(col,.35));
+  // Hexagon shape
+  ctx2.beginPath();
+  for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2-Math.PI/6;i===0?ctx2.moveTo(Math.cos(a)*bitR,Math.sin(a)*bitR):ctx2.lineTo(Math.cos(a)*bitR,Math.sin(a)*bitR);}
+  ctx2.closePath();
+  ctx2.fillStyle=bitGrad;ctx2.fill();
+  ctx2.strokeStyle=lighty(col,.4);ctx2.lineWidth=1.5;
+  ctx2.shadowColor=col;ctx2.shadowBlur=8;ctx2.stroke();ctx2.shadowBlur=0;
+  ctx2.restore();
+
+  // ── BIT GEAR TEETH (the X-Celerator gear that engages the rail) ──
+  ctx2.save();
+  const gearR=r*.26;
+  ctx2.beginPath();ctx2.arc(0,0,gearR,0,Math.PI*2);
+  ctx2.fillStyle='#0a0f18';ctx2.fill();
+  // 8 small gear teeth around the bit hub
+  const toothCount=8;
+  for(let i=0;i<toothCount;i++){
+    const a=(i/toothCount)*Math.PI*2;
+    const tr=gearR+3.5;
+    ctx2.beginPath();
+    ctx2.arc(Math.cos(a)*tr, Math.sin(a)*tr, 2.5, 0, Math.PI*2);
+    ctx2.fillStyle=(b.railBurst>0)?'#ffffff':col+'cc';ctx2.fill();
+  }
+  // Centre axle dot
+  ctx2.beginPath();ctx2.arc(0,0,gearR*.5,0,Math.PI*2);
+  const axleGrad=ctx2.createRadialGradient(-1,-1,0,0,0,gearR*.5);
+  axleGrad.addColorStop(0,'#ffffff');axleGrad.addColorStop(1,col);
+  ctx2.fillStyle=axleGrad;ctx2.fill();
+  ctx2.restore();
+
+  // Rail burst flash — white hot glow when engaging rail
+  if(b.railBurst>0){
+    ctx2.save();ctx2.globalAlpha=b.railBurst;
+    const flash=ctx2.createRadialGradient(0,0,0,0,0,r+20);
+    flash.addColorStop(0,'rgba(255,255,255,0.9)');
+    flash.addColorStop(.3,b.gc+'0.7)');
+    flash.addColorStop(1,'transparent');
+    ctx2.beginPath();ctx2.arc(0,0,r+20,0,Math.PI*2);ctx2.fillStyle=flash;ctx2.fill();
+    ctx2.restore();
+    b.railBurst=Math.max(0,b.railBurst-0.08);
+  }
+
+  ctx2.restore();
+}
+
+function arenaLoop(){
+  if(animId===null)return;
+
+  drawEmptyArena();
+
+  const pf=getArenaPlayfield();
+  const st=selectedStadium;
+
+  // Handle KO fly-out animation
+  if(koAnim.active){
+    koAnim.timer--;
+    // Move losing bey out of arena
+    const lb=beys[koAnim.bey];
+    lb.x+=koAnim.vx;lb.y+=koAnim.vy;
+    koAnim.vx*=1.04;koAnim.vy*=1.04;
+    const stPct=koAnim.bey===0?(bat.st1/bat.maxSt1):(bat.st2/bat.maxSt2);
+    drawBey(lb,stPct,koAnim.bey);
+    // Draw winner bey still spinning
+    const wb=beys[1-koAnim.bey];
+    wb.angle+=wb.spin*0.5;
+    drawBey(wb,1,1-koAnim.bey);
+    particles=particles.filter(p=>p.l>0);
+    particles.forEach(p=>{ctx2.save();ctx2.globalAlpha=p.l/p.ml;ctx2.beginPath();ctx2.arc(p.x,p.y,p.r,0,Math.PI*2);ctx2.fillStyle=p.c;ctx2.fill();ctx2.restore();p.x+=p.vx;p.y+=p.vy;p.vy+=.1;p.l--;});
+    if(koAnim.timer<=0){
+      koAnim.active=false;
+      stScore[koAnim.winner]+=koAnim.pts;
+      updateScoreDisplay();
+      endBattle(koAnim.winner,koAnim.method,koAnim.pts);
+    }
+    animId=requestAnimationFrame(arenaLoop);
+    return;
+  }
+
+  const now=Date.now();
+
+  beys.forEach((b,i)=>{
+    b.trail.push({x:b.x,y:b.y});if(b.trail.length>18)b.trail.shift();
+    b.x+=b.vx;b.y+=b.vy;
+    const stPct=i===0?(bat.st1/bat.maxSt1):(bat.st2/bat.maxSt2);
+    b.angle+=b.spin*(0.3+stPct*.7);
+    b.wobble=Math.max(0,1-stPct);
+    if(!b.railBurst)b.railBurst=0;
+
+    // ── BOUNDARY + RAIL INTERACTION ──
+    if(pf.type==='round'){
+      const dist=Math.sqrt((b.x-pf.cx)**2+(b.y-pf.cy)**2);
+      if(dist+b.r>pf.r){
+        const nx=(b.x-pf.cx)/dist,ny=(b.y-pf.cy)/dist;
+        const dot=b.vx*nx+b.vy*ny;
+        b.vx-=2*dot*nx;b.vy-=2*dot*ny;
+        b.x=pf.cx+nx*(pf.r-b.r-1);b.y=pf.cy+ny*(pf.r-b.r-1);
+      }
+    } else {
+      // Check X-Rail interaction BEFORE wall bounce
+      if(st.xtremeDash){
+        const rails=getRailPositions(pf,st);
+        rails.forEach(rail=>{
+          // Check if bey crosses the rail (within 8px)
+          const dist=pointToSegmentDist(b.x,b.y,rail.x1,rail.y1,rail.x2,rail.y2);
+          if(dist<b.r+6 && !b.onRail){
+            b.onRail=true;b.railBurst=1.0;
+            railFlash={active:true,bey:i,timer:8};
+            // Xtreme Dash: accelerate along rail direction then redirect toward centre
+            const cx2=pf.x+pf.w/2,cy2=pf.y+pf.h/2;
+            const toCx=cx2-b.x,toCy=cy2-b.y;
+            const len=Math.sqrt(toCx*toCx+toCy*toCy);
+            const boost=2.2;
+            b.vx=(toCx/len)*b.baseSpd*boost;
+            b.vy=(toCy/len)*b.baseSpd*boost;
+            b.baseSpd=Math.min(b.baseSpd*1.3, 6.5); // speed cap after rail boost
+          } else if(dist>b.r+10){
+            b.onRail=false;
+          }
+        });
+        // Reset baseSpd over time after boost
+        if(b.baseSpd>b.origSpd+0.1) b.baseSpd=Math.max(b.origSpd,b.baseSpd-0.05);
+      }
+
+      // Wall bounces
+      if(b.x-b.r<pf.x){b.vx=Math.abs(b.vx);b.x=pf.x+b.r+1;}
+      if(b.x+b.r>pf.x+pf.w){b.vx=-Math.abs(b.vx);b.x=pf.x+pf.w-b.r-1;}
+      if(b.y-b.r<pf.y){b.vy=Math.abs(b.vy);b.y=pf.y+b.r+1;}
+      if(b.y+b.r>pf.y+pf.h){b.vy=-Math.abs(b.vy);b.y=pf.y+pf.h-b.r-1;}
+
+      // Speed normalisation (not during boost)
+      const spd=Math.sqrt(b.vx**2+b.vy**2);
+      if(spd>.01&&spd<b.baseSpd*.8){b.vx=(b.vx/spd)*b.baseSpd;b.vy=(b.vy/spd)*b.baseSpd;}
+      if(spd>b.baseSpd*1.5){b.vx=(b.vx/spd)*b.baseSpd*1.4;b.vy=(b.vy/spd)*b.baseSpd*1.4;}
+    }
+
+    drawBey(b,stPct,i);
+  });
+
+  // Rail flash timer
+  if(railFlash.active){railFlash.timer--;if(railFlash.timer<=0)railFlash.active=false;}
+
+  // Particles
+  particles=particles.filter(p=>p.l>0);
+  particles.forEach(p=>{
+    ctx2.save();ctx2.globalAlpha=p.l/p.ml;ctx2.beginPath();ctx2.arc(p.x,p.y,p.r,0,Math.PI*2);ctx2.fillStyle=p.c;ctx2.fill();ctx2.restore();
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.l--;
+  });
+
+  animId=requestAnimationFrame(arenaLoop);
+}
+
+function getRailPositions(pf,st){
+  const {x,y,w,h}=pf;
+  if(st.shape==='infinity'){
+    return[
+      {x1:x+14,y1:y+h*.28,x2:x+w-14,y2:y+h*.28},
+      {x1:x+14,y1:y+h*.66,x2:x+w-14,y2:y+h*.66}
+    ];
+  }else if(st.shape==='wide'){
+    return[{x1:x+14,y1:y+h*.42,x2:x+w-14,y2:y+h*.42}];
+  }else{
+    const rails=[{x1:x+14,y1:y+h*.40,x2:x+w-14,y2:y+h*.40}];
+    if(st.id==='battle')rails.push({x1:x+14,y1:y+h*.68,x2:x+w-14,y2:y+h*.68});
+    return rails;
+  }
+}
+
+function pointToSegmentDist(px,py,ax,ay,bx,by){
+  const dx=bx-ax,dy=by-ay;
+  if(dx===0&&dy===0)return Math.sqrt((px-ax)**2+(py-ay)**2);
+  const t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy)));
+  return Math.sqrt((px-(ax+t*dx))**2+(py-(ay+t*dy))**2);
+}
+
+function spawnP(x,y){
+  const cols=['#ffe44d','#ffffff','#00d4ff','#ff3a6e','#00ff88','#ffffff'];
+  for(let i=0;i<28;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*5;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:1.5+Math.random()*3.5,c:cols[Math.floor(Math.random()*cols.length)],l:28+Math.random()*22,ml:50});}
+}
+function lighty(h,a){const r=Math.min(255,parseInt(h.slice(1,3),16)+Math.round(255*a)),g=Math.min(255,parseInt(h.slice(3,5),16)+Math.round(255*a)),b=Math.min(255,parseInt(h.slice(5,7),16)+Math.round(255*a));return`rgb(${r},${g},${b})`;}
+function darky(h,a){const r=Math.max(0,parseInt(h.slice(1,3),16)-Math.round(255*a)),g=Math.max(0,parseInt(h.slice(3,5),16)-Math.round(255*a)),b=Math.max(0,parseInt(h.slice(5,7),16)-Math.round(255*a));return`rgb(${r},${g},${b})`;}
+
+// ════════════════════════════════════════════════════
+//  BATTLE
+// ════════════════════════════════════════════════════
+let bat={};
+
+function tyMod(at,dt){
+  if(at==='balance'||dt==='balance')return 1.0;
+  if(TYPE_ADV[at]===dt)return 1.35;
+  if(TYPE_LOSES[at]===dt)return 0.72;
+  return 1.0;
+}
+
+function launchBattle(){
+  for(let p=1;p<=2;p++){
+    if(!P[p].layer||!P[p].disc||!P[p].driver){alert(`Player ${p}: choose all 3 parts!`);return;}
+  }
+  P[1].name=document.getElementById('name1').value||'Bey 1';
+  P[2].name=document.getElementById('name2').value||'Bey 2';
+  const t1=getTotal(1),t2=getTotal(2);
+  const st=selectedStadium;
+
+  // Stadium multipliers applied to stamina pool and speed
+  const stBase1=Math.round((40+t1.stm*5.5+(P[1].type==='stamina'?20:0)+(P[1].type==='balance'?10:0))*st.stmMult);
+  const stBase2=Math.round((40+t2.stm*5.5+(P[2].type==='stamina'?20:0)+(P[2].type==='balance'?10:0))*st.stmMult);
+
+  bat={hp1:100,hp2:100,st1:stBase1,st2:stBase2,maxSt1:stBase1,maxSt2:stBase2,round:0,over:false,t1,t2};
+  stScore={1:0,2:0};
+
+  // UI
+  document.getElementById('b-n1').textContent=P[1].name;
+  document.getElementById('b-n2').textContent=P[2].name;
+  document.getElementById('ba1-atk').textContent=t1.atk;
+  document.getElementById('ba1-def').textContent=t1.def;
+  document.getElementById('ba1-stm').textContent=t1.stm;
+  document.getElementById('ba1-spd').textContent=t1.spd;
+  document.getElementById('ba1-bst').textContent=t1.bst;
+  document.getElementById('ba1-typ').textContent=P[1].type.charAt(0).toUpperCase()+P[1].type.slice(1);
+  document.getElementById('ba2-atk').textContent=t2.atk;
+  document.getElementById('ba2-def').textContent=t2.def;
+  document.getElementById('ba2-stm').textContent=t2.stm;
+  document.getElementById('ba2-spd').textContent=t2.spd;
+  document.getElementById('ba2-bst').textContent=t2.bst;
+  document.getElementById('ba2-typ').textContent=P[2].type.charAt(0).toUpperCase()+P[2].type.slice(1);
+  document.getElementById('bp1-layer').innerHTML=`<b>Blade:</b> ${P[1].layer.name}`;
+  document.getElementById('bp1-disc').innerHTML=`<b>Ratchet:</b> ${P[1].disc.name}`;
+  document.getElementById('bp1-driver').innerHTML=`<b>Bit:</b> ${P[1].driver.name}`;
+  document.getElementById('bp2-layer').innerHTML=`<b>Blade:</b> ${P[2].layer.name}`;
+  document.getElementById('bp2-disc').innerHTML=`<b>Disc:</b> ${P[2].disc.name}`;
+  document.getElementById('bp2-driver').innerHTML=`<b>Bit:</b> ${P[2].driver.name}`;
+
+  // Stadium indicator
+  const modHtml=st.mods.map(m=>`<span class="sti-mod ${m.cls}">${m.label}</span>`).join('');
+  ['sti-name','sti-name2'].forEach(id=>{document.getElementById(id).textContent=st.name;});
+  ['sti-mods1','sti-mods2'].forEach(id=>{document.getElementById(id).innerHTML=modHtml;});
+
+  // Type notice
+  const tn=document.getElementById('tnotice');
+  const t1t=P[1].type,t2t=P[2].type;
+  if(t1t==='balance'&&t2t==='balance'){tn.textContent='⚖ vs ⚖ — Pure build stats decide.';tn.className='tnotice';}
+  else if(t1t==='balance'||t2t==='balance'){tn.textContent='⚖ Balance: no matchup modifier.';tn.className='tnotice';}
+  else if(TYPE_ADV[t1t]===t2t){tn.textContent=`⚡ ${P[1].name} has TYPE ADVANTAGE!`;tn.className='tnotice adv';}
+  else if(TYPE_ADV[t2t]===t1t){tn.textContent=`⚡ ${P[2].name} has TYPE ADVANTAGE!`;tn.className='tnotice adv';}
+  else{tn.textContent='Neutral matchup.';tn.className='tnotice';}
+
+  updateScoreDisplay();
+  updateBars();
+  document.getElementById('build-screen').style.display='none';
+  document.getElementById('battle-screen').style.display='block';
+  document.getElementById('s2').classList.remove('active');document.getElementById('s2').classList.add('done');
+  document.getElementById('s3').classList.add('active');
+  document.getElementById('bstatus').textContent='SPINNING!';
+  document.getElementById('rdisp').textContent='Round 0';
+  document.getElementById('fightBtn').disabled=false;
+  document.getElementById('log1').innerHTML='';document.getElementById('log2').innerHTML='';
+
+  initBeys(t1,t2);
+  if(animId!==null)cancelAnimationFrame(animId);
+  animId=0;arenaLoop();
+}
+
+function doRound(){
+  if(bat.over)return;
+  bat.round++;
+  document.getElementById('rdisp').textContent=`Round ${bat.round}`;
+  const st=selectedStadium;
+  const t1=bat.t1,t2=bat.t2;
+  const stPct1=bat.st1/bat.maxSt1,stPct2=bat.st2/bat.maxSt2;
+
+  function hit(atkP,defP,atkT,defT,atkStPct){
+    // Base: ATK stat × 6 + noise, scaled by stadium ATK multiplier
+    const noise=atkP.type==='balance'?(Math.random()*7+4):(Math.random()*11);
+    let base=(atkT.atk*6+noise)*st.atkMult;
+    base*=(0.35+atkStPct*.65); // stamina power
+    base*=tyMod(atkP.type,defP.type);
+    if(atkP.type==='attack')base*=1.12*st.atkMult; // double dip for attack types in X stadiums
+    if(defP.type==='defense'&&Math.random()<0.15+defT.def*.02)return{dmg:0,crit:false,counter:true,burst:false,xtreme:false};
+    if(defP.type==='balance'&&atkP.type==='attack'&&Math.random()<.2)base*=.6;
+    base=Math.max(1,base-defT.def*7*st.defMult);
+    const critChance=atkT.spd*0.07*st.spdMult;
+    const isCrit=Math.random()<critChance;
+    if(isCrit)base*=1.65;
+    // Xtreme Dash bonus
+    let xtreme=false;
+    if(st.xtremeDash&&atkP.driver?.id){
+      const xtremeDrivers=['flat','gear_flat','rush','accel'];
+      const xChance=xtremeDrivers.includes(atkP.driver.id)?0.35:0.15;
+      if(Math.random()<xChance){base*=1.5;xtreme=true;}
+    }
+    // Burst check
+    let burst=false;
+    if(base>20&&atkT.atk>=18){
+      const bc=Math.max(0,(base/60)-(defT.bst/32));
+      if(Math.random()<bc)burst=true;
+    }
+    return{dmg:Math.round(base),crit:isCrit,counter:false,burst,xtreme};
+  }
+
+  function drain(p,t){
+    const base=9*TYPE_DRAIN[p.type]*st.drainMult;
+    const red=t.stm*1.6+p.driver.stm*.3;
+    return Math.max(.6,base-red+Math.random()*2);
+  }
+
+  const r1=hit(P[1],P[2],t1,t2,stPct1);
+  const r2=hit(P[2],P[1],t2,t1,stPct2);
+  const d1=drain(P[1],t1),d2=drain(P[2],t2);
+
+  bat.st1=Math.max(0,bat.st1-d1);
+  bat.st2=Math.max(0,bat.st2-d2);
+  if(!r1.counter)bat.hp2=Math.max(0,bat.hp2-r1.dmg);
+  if(!r2.counter)bat.hp1=Math.max(0,bat.hp1-r2.dmg);
+
+  const mx=(beys[0].x+beys[1].x)/2,my=(beys[0].y+beys[1].y)/2;
+  spawnP(mx,my);spawnCSS(mx,my);
+
+  appendLog(1,makeLog(r1,d1));
+  appendLog(2,makeLog(r2,d2));
+  updateBars();
+
+  // Win checks — points-based
+  let winner=null,method='',pts=0;
+  if(r1.burst){winner=1;method='BURST FINISH';pts=2;}
+  else if(r2.burst){winner=2;method='BURST FINISH';pts=2;}
+  else if(bat.st1<=0&&bat.st2<=0){winner=bat.hp1>bat.hp2?1:2;method='SPIN FINISH';pts=1;}
+  else if(bat.st1<=0){winner=2;method='SPIN FINISH';pts=1;}
+  else if(bat.st2<=0){winner=1;method='SPIN FINISH';pts=1;}
+  else if(bat.hp1<=0){winner=2;method='OVER FINISH';pts=st.overFinishPts;}
+  else if(bat.hp2<=0){winner=1;method='OVER FINISH';pts=st.overFinishPts;}
+
+  // Random Xtreme Zone finish
+  if(!winner&&st.xtremeDash&&bat.round>2){
+    const xChance=Math.max(0,(1-(bat.st1/bat.maxSt1+bat.st2/bat.maxSt2)/2)*0.06);
+    if(Math.random()<xChance){
+      winner=Math.random()<.5?1:2;method='XTREME FINISH';pts=st.xtremeFinishPts;
+      appendLog(winner,`<span class="xtreme">⚡ XTREME ZONE!</span>`);
+      appendLog(winner===1?2:1,`<span class="ko">💀 Knocked into Xtreme Zone!</span>`);
+    }
+  }
+
+  if(winner){
+    // For Burst, Xtreme, and Over finishes — show fly-out animation
+    if(!bat.over && (method==='BURST FINISH'||method==='OVER FINISH'||method==='XTREME FINISH')){
+      bat.over=true;
+      document.getElementById('fightBtn').disabled=true;
+      document.getElementById('bstatus').textContent='⚡ KNOCKED OUT!';
+      appendLog(winner===1?1:2,method==='BURST FINISH'?`<span class="ko">💥 BURST! ${P[winner===1?2:1].name} explodes apart!</span>`:`<span class="xtreme">⚡ ${P[winner===1?2:1].name} sent flying!</span>`);
+      stScore[winner]+=pts;updateScoreDisplay();
+      triggerKOFlyout(winner===1?1:0, winner, method, pts);
+    } else if(!bat.over){
+      stScore[winner]+=pts;
+      updateScoreDisplay();
+      endBattle(winner,method,pts);
+    }
+  }else{
+    document.getElementById('bstatus').textContent=`ROUND ${bat.round} — CLASH!`;
+  }
+}
+
+function makeLog(r,drain){
+  if(r.burst)return`<span class="ko">💥 BURST FINISH!</span>`;
+  if(r.counter)return`<span class="info">🛡 Deflected! Zero damage.</span>`;
+  if(r.dmg===0)return`<span class="miss">— Glancing blow.</span>`;
+  const c=r.crit?` <span class="crit">CRITICAL HIT!</span>`:'';
+  const x=r.xtreme?` <span class="xtreme">⚡ XTREME DASH!</span>`:'';
+  return`<span class="hit">${r.dmg} dmg.</span>${c}${x} <span class="miss">(−${Math.round(drain)} stm)</span>`;
+}
+
+function appendLog(p,msg){
+  const el=document.getElementById(`log${p}`);
+  el.innerHTML=msg+'<br>'+el.innerHTML;
+  const lines=el.innerHTML.split('<br>');
+  if(lines.length>5)el.innerHTML=lines.slice(0,5).join('<br>');
+}
+
+function updateBars(){
+  document.getElementById('hp1t').textContent=bat.hp1;
+  document.getElementById('hp2t').textContent=bat.hp2;
+  document.getElementById('hp1b').style.width=bat.hp1+'%';
+  document.getElementById('hp2b').style.width=bat.hp2+'%';
+  const p1=Math.round(bat.st1/bat.maxSt1*100),p2=Math.round(bat.st2/bat.maxSt2*100);
+  document.getElementById('st1t').textContent=Math.round(bat.st1);
+  document.getElementById('st2t').textContent=Math.round(bat.st2);
+  document.getElementById('st1b').style.width=p1+'%';
+  document.getElementById('st2b').style.width=p2+'%';
+}
+
+function updateScoreDisplay(){
+  document.getElementById('sc1').textContent=stScore[1];
+  document.getElementById('sc2').textContent=stScore[2];
+  document.getElementById('scl1').textContent=P[1].name||'P1';
+  document.getElementById('scl2').textContent=P[2].name||'P2';
+}
+
+function triggerKOFlyout(loser,winner,method,pts){
+  if(!beys[loser])return;
+  const pf=getArenaPlayfield();
+  const cx=pf.type==='round'?pf.cx:pf.x+pf.w/2;
+  const cy=pf.type==='round'?pf.cy:pf.y+pf.h/2;
+  // Direction away from centre
+  const dx=beys[loser].x-cx, dy=beys[loser].y-cy;
+  const len=Math.sqrt(dx*dx+dy*dy)||1;
+  koAnim={
+    active:true, bey:loser, winner, method, pts,
+    vx:(dx/len)*8+(Math.random()-.5)*3,
+    vy:(dy/len)*8+(Math.random()-.5)*3-2,
+    timer:55
+  };
+  // Big particles at collision point
+  spawnP(beys[loser].x,beys[loser].y);
+  spawnP(beys[loser].x,beys[loser].y);
+  spawnCSS(beys[loser].x,beys[loser].y);
+}
+
+function endBattle(w,method,pts){
+  bat.over=true;
+  document.getElementById('fightBtn').disabled=true;
+  document.getElementById('bstatus').textContent=P[w].name+' WINS!';
+  appendLog(1,`<span class="${w===1?'win':'ko'}">${w===1?'🏆 VICTORY!':'💀 DEFEATED.'}</span>`);
+  appendLog(2,`<span class="${w===2?'win':'ko'}">${w===2?'🏆 VICTORY!':'💀 DEFEATED.'}</span>`);
+  const ov=document.getElementById('winner-overlay');
+  document.getElementById('winner-title').textContent=P[w].name;
+  document.getElementById('winner-title').style.color=w===1?'var(--p1)':'var(--p2)';
+  document.getElementById('winner-method').textContent=method;
+  document.getElementById('winner-sub').textContent=`+${pts} point${pts!==1?'s':''} · ${selectedStadium.name}`;
+  ov.classList.add('show');
+}
+
+function spawnCSS(cx,cy){
+  const rect=arCanvas.getBoundingClientRect();
+  const sx=rect.left+cx*(rect.width/arCanvas.width),sy=rect.top+cy*(rect.height/arCanvas.height);
+  const cols=['#ffe44d','#fff','#00d4ff','#ff3a6e','#00ff88'];
+  for(let i=0;i<14;i++){
+    const el=document.createElement('div');el.className='spark';
+    const a=Math.random()*360,d=35+Math.random()*70,s=3+Math.random()*4;
+    el.style.cssText=`width:${s}px;height:${s}px;left:${sx}px;top:${sy}px;background:${cols[Math.floor(Math.random()*cols.length)]};--tx:${Math.cos(a*Math.PI/180)*d}px;--ty:${Math.sin(a*Math.PI/180)*d}px;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),800);
+  }
+}
+
+window.addEventListener('resize',()=>{if(animId===null)initArena();});
+
+</script>
+</body>
+</html>
